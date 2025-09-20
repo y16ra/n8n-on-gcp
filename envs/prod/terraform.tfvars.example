@@ -1,0 +1,31 @@
+project_id   = "your-gcp-project-id"
+region       = "asia-northeast1"
+service_name = "n8n"
+
+# Artifact Registry
+repository_id = "n8n"
+image_tag     = "latest" # 例: 1.63.0
+
+# 公開（未認証）可否。true の場合は Basic Auth を必ず有効にしてください
+public = true
+
+# n8n 認証
+n8n_basic_auth_user                 = "admin"
+n8n_basic_auth_password_secret_name = "n8n-basic-auth-password"
+n8n_encryption_key_secret_name      = "n8n-encryption-key"
+
+# Supabase Postgres 接続
+db_host                 = "aws-xxxxx.ap-northeast-1.aws.supabase.co" # Supabase のホスト
+db_port                 = 5432
+db_name                 = "postgres"
+db_user                 = "postgres"
+db_password_secret_name = "n8n-db-password"
+
+# 実行リソース
+concurrency = 10
+cpu         = "1"
+memory      = "1Gi"
+
+# 任意: 外部公開URL（カスタムドメイン or Cloud Run URL）
+# 空の場合は未設定
+webhook_url = ""
