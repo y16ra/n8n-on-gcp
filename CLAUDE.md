@@ -151,9 +151,9 @@ When making changes to this repository:
    chore: update terraform version requirements to 1.5.0+
    ```
 
-2. **Test infrastructure changes** in isolated environments before applying to production
+3. **Test infrastructure changes** in isolated environments before applying to production
 
-3. **Verify deployments** using Cloud Run logs and n8n web interface accessibility
+4. **Verify deployments** using Cloud Run logs and n8n web interface accessibility
 
 ## Common Issue Resolution
 
