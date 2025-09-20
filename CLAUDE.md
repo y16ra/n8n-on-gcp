@@ -111,3 +111,53 @@ Modules have explicit dependencies:
 - **Docker**: Required for image mirroring operations
 - **gcloud beta components**: Required for Cloud Run logs access (`gcloud components install beta`)
 - **Supabase**: External database service setup required before deployment
+
+## Development Workflow
+
+When making changes to this repository:
+
+1. **Always create feature branches** before making commits:
+   ```bash
+   git checkout -b feature/your-feature-name
+   # Make your changes
+   git add .
+   git commit -m "feat(scope): your conventional commit message"
+   git push -u origin feature/your-feature-name
+   # Create PR for review
+   ```
+
+2. **Use Conventional Commits format** for all commit messages (English):
+   ```
+   <type>[optional scope]: <description>
+
+   [optional body]
+   [optional footer(s)]
+   ```
+
+   **Common types:**
+   - `feat`: New features
+   - `fix`: Bug fixes
+   - `docs`: Documentation changes only
+   - `style`: Code style changes (formatting, semicolons, etc.)
+   - `refactor`: Code changes that neither fix bugs nor add features
+   - `test`: Adding or modifying tests
+   - `chore`: Build process or auxiliary tool changes
+
+   **Examples:**
+   ```bash
+   feat(terraform): add cloud run n8n deployment module
+   fix(secrets): resolve secret manager IAM binding issue
+   docs: update README with supabase setup instructions
+   chore: update terraform version requirements to 1.5.0+
+   ```
+
+3. **Test infrastructure changes** in isolated environments before applying to production
+
+4. **Verify deployments** using Cloud Run logs and n8n web interface accessibility
+
+## Common Issue Resolution
+
+- **"terraform.tfvars not found"**: Copy from `terraform.tfvars.example` and populate with your values
+- **"Image not found in Artifact Registry"**: Run image mirroring commands or GitHub Actions workflow first
+- **"Database connection refused"**: Verify Supabase host format and network connectivity
+- **"Cloud Run startup timeout"**: Check container logs for application-level errors
