@@ -79,3 +79,24 @@ variable "memory" {
   type    = string
   default = "1Gi"
 }
+
+# Cloud Storage settings
+variable "storage_versioning_enabled" {
+  type        = bool
+  default     = false
+  description = "Cloud Storageバケットのバージョニングを有効にするか"
+}
+
+variable "storage_lifecycle_rules" {
+  type = list(object({
+    age    = number
+    action = string
+  }))
+  default = [
+    {
+      age    = 90
+      action = "Delete"
+    }
+  ]
+  description = "Cloud Storageのライフサイクルルール"
+}

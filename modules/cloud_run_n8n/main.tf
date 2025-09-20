@@ -9,7 +9,7 @@ resource "google_cloud_run_v2_service" "this" {
     timeout         = "900s"
 
     scaling {
-      min_instance_count = 1
+      min_instance_count = 0
       max_instance_count = 1
     }
 
@@ -117,10 +117,40 @@ resource "google_cloud_run_v2_service" "this" {
         }
       }
 
-      # バイナリは最小構成ではfilesystem
+      # バイナリデータストレージ設定
       env {
         name  = "N8N_BINARY_DATA_MODE"
-        value = "filesystem"
+        value = var.storage_bucket_name != "" ? "s3" : "filesystem"
+      }
+
+      # Cloud Storage (S3互換) 設定
+      dynamic "env" {
+        for_each = var.storage_bucket_name != "" ? [1] : []
+        content {
+          name  = "N8N_BINARY_DATA_S3_ENDPOINT"
+          value = "storage.googleapis.com"
+        }
+      }
+      dynamic "env" {
+        for_each = var.storage_bucket_name != "" ? [1] : []
+        content {
+          name  = "N8N_BINARY_DATA_S3_BUCKET"
+          value = var.storage_bucket_name
+        }
+      }
+      dynamic "env" {
+        for_each = var.storage_bucket_name != "" ? [1] : []
+        content {
+          name  = "N8N_BINARY_DATA_S3_REGION"
+          value = var.region
+        }
+      }
+      dynamic "env" {
+        for_each = var.storage_bucket_name != "" ? [1] : []
+        content {
+          name  = "N8N_BINARY_DATA_S3_FORCE_PATH_STYLE"
+          value = "true"
+        }
       }
 
     }

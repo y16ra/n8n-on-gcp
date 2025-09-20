@@ -6,6 +6,7 @@ module "gcp_services" {
     "artifactregistry.googleapis.com",
     "secretmanager.googleapis.com",
     "cloudbuild.googleapis.com",
+    "storage.googleapis.com",
   ]
 }
 
@@ -33,6 +34,16 @@ module "secrets" {
   db_password_secret_name        = var.db_password_secret_name
   basic_auth_password_secret_name = var.n8n_basic_auth_password_secret_name
   depends_on                     = [module.gcp_services]
+}
+
+module "cloud_storage" {
+  source                = "../../modules/cloud_storage"
+  bucket_name           = "${var.project_id}-n8n-binary-data"
+  region                = var.region
+  service_account_email = module.iam.service_account_email
+  versioning_enabled    = var.storage_versioning_enabled
+  lifecycle_rules       = var.storage_lifecycle_rules
+  depends_on           = [module.gcp_services]
 }
 
 locals {
@@ -66,5 +77,9 @@ module "cloud_run_n8n" {
   cpu         = var.cpu
   memory      = var.memory
   webhook_url = var.webhook_url
+
+  # Cloud Storage
+  storage_bucket_name = module.cloud_storage.bucket_name
+
   depends_on  = [module.gcp_services]
 }

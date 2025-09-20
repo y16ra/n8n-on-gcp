@@ -23,6 +23,13 @@ variable "concurrency" { type = number }
 variable "cpu" { type = string }
 variable "memory" { type = string }
 
+# Cloud Storage settings
+variable "storage_bucket_name" {
+  description = "Cloud Storage bucket name for binary data"
+  type        = string
+  default     = ""
+}
+
 # Optional
 variable "webhook_url" {
   type    = string
