@@ -23,8 +23,33 @@ variable "concurrency" { type = number }
 variable "cpu" { type = string }
 variable "memory" { type = string }
 
+# Cloud Storage settings
+variable "storage_bucket_name" {
+  description = "Cloud Storage bucket name for binary data"
+  type        = string
+  default     = ""
+}
+
 # Optional
 variable "webhook_url" {
   type    = string
   default = ""
+}
+
+variable "n8n_public_url" {
+  type        = string
+  default     = ""
+  description = "n8nのパブリックURL。空の場合はCloud RunのURIを自動使用"
+}
+
+variable "n8n_host" {
+  type        = string
+  default     = ""
+  description = "Optional: Explicit host for n8n (e.g. n8n.example.com). Older versions may use HOST/PORT/PROTOCOL for OAuth URLs."
+}
+
+variable "n8n_editor_base_url" {
+  type        = string
+  default     = ""
+  description = "Optional: Full Editor UI base URL (e.g. https://n8n.example.com)."
 }

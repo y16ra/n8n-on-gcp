@@ -3,17 +3,19 @@
 本プロジェクトは、n8n を GCP Cloud Run 上で動作させ、データベースに Supabase Postgres を利用する最小構成の IaC テンプレートです。コンテナイメージは Artifact Registry でホストし、Cloud Build または GitHub Actions で DockerHub の公式イメージをミラーします。
 
 ## 構成概要
-- Cloud Run: n8n 単一インスタンス（min=1, max=1）
+- Cloud Run: n8n サービス（scale-to-zero 対応、min=0, max=1）
 - Secret Manager: `N8N_ENCRYPTION_KEY`, `DB_PASSWORD`, `BASIC_AUTH_PASSWORD`
 - Supabase Postgres: TLS 接続（reject unauthorized=false）
 - Artifact Registry: n8n イメージの保存先
+- Cloud Storage: バイナリデータの永続化（S3互換モード）
 - Cloud Build / GitHub Actions: 公式イメージのミラー（pull→tag→push）
+- OAuth2 URL設定: `N8N_PUBLIC_URL`などによる正しいリダイレクトURL設定
 
 ## 事前準備
 
 ### 1. GCP の準備
 - GCP プロジェクトと課金有効化
-- gcloud / Terraform v1.6+ のインストール
+- gcloud / Terraform v1.5+ のインストール
 - アカウントの権限: Owner もしくは以下ロール相当
   - Service Usage Admin、Cloud Run Admin、Artifact Registry Admin、Secret Manager Admin、IAM Service Account Admin、Project IAM Admin、Cloud Build Service Account など
 
@@ -69,6 +71,18 @@
    ```hcl
    project_id = "n8n-on-gcp-1234567890"
    db_host = "aws-0-ap-northeast-1.pooler.supabase.com"
+
+   # OAuth2設定（Slack等の外部サービス認証用）
+   n8n_public_url = "https://n8n-macpcdzxhq-an.a.run.app"
+
+   # Cloud Storage設定（オプション）
+   storage_versioning_enabled = false  # バージョニング無効
+   storage_lifecycle_rules = [
+     {
+       age    = 90      # 90日後に削除
+       action = "Delete"
+     }
+   ]
    # その他の設定はデフォルトのまま使用可能
    ```
 
@@ -134,7 +148,11 @@
    - **重要**: n8n の初回セットアップ完了後は、Basic Auth は自動的に無効になり、n8n の内部認証システムが使用されます
 
 ## 運用上のヒント
-- シングルインスタンス運用: `N8N_BINARY_DATA_MODE=filesystem` が前提です
+- **バイナリデータ保存**: Cloud Storage（S3互換モード）でスケール対応済み
+- **Scale-to-zero**: トラフィック無時は完全停止でコスト削減
+- **データ永続化**: Cloud Storage使用でインスタンス停止時もデータ保持
+- **ライフサイクル管理**: デフォルトで90日後に古いファイルを自動削除
+- **OAuth2設定**: `n8n_public_url`を設定することで、Slack等のOAuth2認証でCloud RunのURLが正しくリダイレクトURLに使用される
 - 固定出口IPが必要になったら: Serverless VPC Connector + Cloud NAT を追加
 - 公開制御の強化: カスタムドメイン + Cloud Armor / IAP / Private Ingress など
 - ロールバック: Artifact Registry のタグを固定し、`image_tag` を戻して `terraform apply`
@@ -146,6 +164,10 @@
 - `public`（未認証アクセス許可）
 - `db_host`, `db_port`, `db_name`, `db_user`（Supabase 接続）
 - `n8n_basic_auth_user`, `n8n_basic_auth_password_secret_name`, `n8n_encryption_key_secret_name`
+- `storage_versioning_enabled`（Cloud Storageバージョニング、デフォルト: false）
+- `storage_lifecycle_rules`（データライフサイクル管理、デフォルト: 90日で削除）
+- `n8n_public_url`（OAuth2リダイレクトURL設定用、例: `https://n8n-macpcdzxhq-an.a.run.app`）
+- `n8n_host`, `n8n_editor_base_url`（詳細なURL設定、オプション）
 
 ## トラブルシューティング
 
