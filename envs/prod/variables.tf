@@ -65,6 +65,24 @@ variable "webhook_url" {
   description = "必要に応じて設定。未設定の場合は未指定運用（後から再適用可）"
 }
 
+variable "n8n_public_url" {
+  type        = string
+  default     = ""
+  description = "n8nのパブリックURL。OAuth2などで使用。未設定の場合は環境変数なしで起動"
+}
+
+variable "n8n_host" {
+  type        = string
+  default     = ""
+  description = "Optional: N8N_HOST に渡すホスト名（例: n8n.example.com）"
+}
+
+variable "n8n_editor_base_url" {
+  type        = string
+  default     = ""
+  description = "Optional: N8N_EDITOR_BASE_URL に渡すフルURL（例: https://n8n.example.com）"
+}
+
 variable "concurrency" {
   type    = number
   default = 10

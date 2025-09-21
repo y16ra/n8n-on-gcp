@@ -73,10 +73,13 @@ module "cloud_run_n8n" {
   db_password_secret_name = var.db_password_secret_name
 
   # Runtime
-  concurrency = var.concurrency
-  cpu         = var.cpu
-  memory      = var.memory
-  webhook_url = var.webhook_url
+  concurrency     = var.concurrency
+  cpu             = var.cpu
+  memory          = var.memory
+  webhook_url     = var.webhook_url
+  n8n_public_url  = var.n8n_public_url
+  n8n_host        = var.n8n_host
+  n8n_editor_base_url = var.n8n_editor_base_url
 
   # Cloud Storage
   storage_bucket_name = module.cloud_storage.bucket_name

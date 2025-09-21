@@ -9,6 +9,7 @@
 - Artifact Registry: n8n イメージの保存先
 - Cloud Storage: バイナリデータの永続化（S3互換モード）
 - Cloud Build / GitHub Actions: 公式イメージのミラー（pull→tag→push）
+- OAuth2 URL設定: `N8N_PUBLIC_URL`などによる正しいリダイレクトURL設定
 
 ## 事前準備
 
@@ -70,6 +71,9 @@
    ```hcl
    project_id = "n8n-on-gcp-1234567890"
    db_host = "aws-0-ap-northeast-1.pooler.supabase.com"
+
+   # OAuth2設定（Slack等の外部サービス認証用）
+   n8n_public_url = "https://n8n-macpcdzxhq-an.a.run.app"
 
    # Cloud Storage設定（オプション）
    storage_versioning_enabled = false  # バージョニング無効
@@ -148,6 +152,7 @@
 - **Scale-to-zero**: トラフィック無時は完全停止でコスト削減
 - **データ永続化**: Cloud Storage使用でインスタンス停止時もデータ保持
 - **ライフサイクル管理**: デフォルトで90日後に古いファイルを自動削除
+- **OAuth2設定**: `n8n_public_url`を設定することで、Slack等のOAuth2認証でCloud RunのURLが正しくリダイレクトURLに使用される
 - 固定出口IPが必要になったら: Serverless VPC Connector + Cloud NAT を追加
 - 公開制御の強化: カスタムドメイン + Cloud Armor / IAP / Private Ingress など
 - ロールバック: Artifact Registry のタグを固定し、`image_tag` を戻して `terraform apply`
@@ -161,6 +166,8 @@
 - `n8n_basic_auth_user`, `n8n_basic_auth_password_secret_name`, `n8n_encryption_key_secret_name`
 - `storage_versioning_enabled`（Cloud Storageバージョニング、デフォルト: false）
 - `storage_lifecycle_rules`（データライフサイクル管理、デフォルト: 90日で削除）
+- `n8n_public_url`（OAuth2リダイレクトURL設定用、例: `https://n8n-macpcdzxhq-an.a.run.app`）
+- `n8n_host`, `n8n_editor_base_url`（詳細なURL設定、オプション）
 
 ## トラブルシューティング
 

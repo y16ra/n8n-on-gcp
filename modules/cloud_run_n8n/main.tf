@@ -1,3 +1,13 @@
+locals {
+  # If webhook_url/editor_base_url are not provided, fall back to n8n_public_url
+  effective_webhook_url      = var.webhook_url != "" ? var.webhook_url : var.n8n_public_url
+  effective_editor_base_url  = var.n8n_editor_base_url != "" ? var.n8n_editor_base_url : var.n8n_public_url
+
+  # Derive host from n8n_public_url if n8n_host is not provided
+  derived_host_from_public = var.n8n_public_url != "" ? replace(replace(var.n8n_public_url, "https://", ""), "http://", "") : ""
+  effective_host           = var.n8n_host != "" ? var.n8n_host : local.derived_host_from_public
+}
+
 resource "google_cloud_run_v2_service" "this" {
   name     = var.service_name
   location = var.region
@@ -108,12 +118,33 @@ resource "google_cloud_run_v2_service" "this" {
         name  = "N8N_PROTOCOL"
         value = "https"
       }
+      dynamic "env" {
+        for_each = local.effective_host != "" ? [1] : []
+        content {
+          name  = "N8N_HOST"
+          value = local.effective_host
+        }
+      }
+      dynamic "env" {
+        for_each = local.effective_editor_base_url != "" ? [1] : []
+        content {
+          name  = "N8N_EDITOR_BASE_URL"
+          value = local.effective_editor_base_url
+        }
+      }
+      dynamic "env" {
+        for_each = var.n8n_public_url != "" ? [1] : []
+        content {
+          name  = "N8N_PUBLIC_URL"
+          value = var.n8n_public_url
+        }
+      }
 
       dynamic "env" {
-        for_each = var.webhook_url != "" ? [1] : []
+        for_each = local.effective_webhook_url != "" ? [1] : []
         content {
           name  = "WEBHOOK_URL"
-          value = var.webhook_url
+          value = local.effective_webhook_url
         }
       }
 
@@ -125,31 +156,15 @@ resource "google_cloud_run_v2_service" "this" {
 
       # Cloud Storage (S3互換) 設定
       dynamic "env" {
-        for_each = var.storage_bucket_name != "" ? [1] : []
+        for_each = var.storage_bucket_name != "" ? {
+          N8N_BINARY_DATA_S3_ENDPOINT         = "storage.googleapis.com"
+          N8N_BINARY_DATA_S3_BUCKET          = var.storage_bucket_name
+          N8N_BINARY_DATA_S3_REGION          = var.region
+          N8N_BINARY_DATA_S3_FORCE_PATH_STYLE = "true"
+        } : {}
         content {
-          name  = "N8N_BINARY_DATA_S3_ENDPOINT"
-          value = "storage.googleapis.com"
-        }
-      }
-      dynamic "env" {
-        for_each = var.storage_bucket_name != "" ? [1] : []
-        content {
-          name  = "N8N_BINARY_DATA_S3_BUCKET"
-          value = var.storage_bucket_name
-        }
-      }
-      dynamic "env" {
-        for_each = var.storage_bucket_name != "" ? [1] : []
-        content {
-          name  = "N8N_BINARY_DATA_S3_REGION"
-          value = var.region
-        }
-      }
-      dynamic "env" {
-        for_each = var.storage_bucket_name != "" ? [1] : []
-        content {
-          name  = "N8N_BINARY_DATA_S3_FORCE_PATH_STYLE"
-          value = "true"
+          name  = env.key
+          value = env.value
         }
       }
 
